@@ -11,29 +11,6 @@ import core.jdbc.ConnectionManager;
 import next.model.User;
 
 public class UserDao {
-	
-	void setValuesForInsert(User user, PreparedStatement pstmt) throws SQLException {
-		pstmt.setString(1, user.getUserId());
-        pstmt.setString(2, user.getPassword());
-        pstmt.setString(3, user.getName());
-        pstmt.setString(4, user.getEmail());
-	}
-	
-	void setValuesForUpdate(User user, PreparedStatement pstmt) throws SQLException {
-		pstmt.setString(4, user.getUserId());
-		pstmt.setString(1, user.getPassword());
-		pstmt.setString(2, user.getName());
-		pstmt.setString(3, user.getEmail());
-	}
-	
-	String createQueryForInsert() {
-		return "INSERT INTO USERS VALUES (?,?,?,?)";
-	}
-	
-	String createQueryForUpdate() {
-		return "UPDATE USERS SET password = ?, name = ?, email = ? WHERE userid = ?";
-	}
-	
     public void insert(User user) throws SQLException {
     	String query = "INSERT INTO USERS VALUES (?,?,?,?)";
     	JdbcTemplate insertJdbc = new JdbcTemplate() {
@@ -44,15 +21,53 @@ public class UserDao {
 		        pstmt.setString(3, user.getName());
 		        pstmt.setString(4, user.getEmail());
 			}
+
+			@Override
+			Object mapRow(ResultSet rs) {
+				// TODO Auto-generated method stub
+				return null;
+			}
     	};
     	insertJdbc.update(query);
     }
 
     public void update(User user) throws SQLException {
-        UpdateJdbcTemplate.update(user, new UserDao());
+    	String query = "UPDATE USERS SET password = ?, name = ?, email = ? WHERE userid = ?\";\n";
+    	JdbcTemplate insertJdbc = new JdbcTemplate() {
+			@Override
+			void setValues(PreparedStatement pstmt) throws SQLException {
+				pstmt.setString(4, user.getUserId());
+				pstmt.setString(1, user.getPassword());
+				pstmt.setString(2, user.getName());
+				pstmt.setString(3, user.getEmail());
+			}
+
+			@Override
+			Object mapRow(ResultSet rs) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+    	};
+    	insertJdbc.update(query);
     }
 
     public List<User> findAll() throws SQLException {
+    	String query = "SELECT userId, password, name, email FROM USERS";
+    	JdbcTemplate findJdbc = new JdbcTemplate() {
+
+			@Override
+			void setValues(PreparedStatement pstmt) throws SQLException {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			Object mapRow(ResultSet rs) throws SQLException {
+				return new User(rs.getString("userId"), rs.getString("password"), rs.getString("name"), rs.getString("email"));
+			}
+    		
+    	};
+    	
         // TODO 구현 필요함.
     	ArrayList<User> list = new ArrayList<User>();
     	Connection con = null;

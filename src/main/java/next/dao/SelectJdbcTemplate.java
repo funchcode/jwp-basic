@@ -10,28 +10,9 @@ import java.util.List;
 import core.jdbc.ConnectionManager;
 import next.model.User;
 
-public abstract class JdbcTemplate {
-	void update(String query) throws SQLException {
-		Connection con = null;
-        PreparedStatement pstmt = null;
-        try {
-        	con = ConnectionManager.getConnection();
-        	pstmt = con.prepareStatement(query);
-        	setValues(pstmt);
-        	pstmt.executeUpdate();
-        } finally {
-        	if (pstmt != null) {
-                pstmt.close();
-            }
-
-            if (con != null) {
-                con.close();
-            }
-        }
-	}
-	
+public abstract class SelectJdbcTemplate {
 	List query(String query) throws SQLException {
-		ArrayList<Object> list = new ArrayList<Object>();
+		ArrayList<User> list = new ArrayList<User>();
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	ResultSet rs = null;
@@ -39,11 +20,11 @@ public abstract class JdbcTemplate {
     	try {
     		con = ConnectionManager.getConnection();
     		pstmt = con.prepareStatement(query);
-    		setValues(pstmt);
+    		setValue(pstmt);
     		rs = pstmt.executeQuery();
     		
     		while(rs.next()) {
-    			list.add(mapRow(rs));
+    			list.add(new User(rs.getString("userId"), rs.getString("password"), rs.getString("name"), rs.getString("email")));
     		}
     		
     		return list;
@@ -60,9 +41,10 @@ public abstract class JdbcTemplate {
     	}
 	}
 	
-	Object queryForObject(String query) {
+	Object queryForObject(String query) throws SQLException {
 		return null;
 	}
-	abstract void setValues(PreparedStatement pstmt) throws SQLException;
-	abstract Object mapRow(ResultSet rs) throws SQLException;
+	
+	abstract void setValue(PreparedStatement pstmt);
+	abstract Object mapRow(ResultSet rs);
 }
